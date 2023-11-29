@@ -1,86 +1,88 @@
-import { useState, ChangeEvent } from 'react';
-import './App.css';
+import React, { useState } from 'react';
 
-type Time = {
-  hour: string | null;
-  minute: string | null;
-  meridiem: string;
+type AlarmTime = {
+  hour: number;
+  minute: number;
+  isAM: boolean; // true for AM, false for PM
 };
 
-function App() {
-  const [wakeTime, setWakeTime] = useState<Time>({ hour: null, minute: null, meridiem: 'AM' });
-  const [bedtime, setBedtime] = useState<Time | undefined>();
+const AlarmCalculator: React.FC = () => {
+  const [alarmTime, setAlarmTime] = useState<AlarmTime>({
+    hour: 7,
+    minute: 0,
+    isAM: true,
+  });
+  const [bedTime, setBedTime] = useState<AlarmTime>({
+    hour: 23,
+    minute: 0,
+    isAM: true,
+  });
+  const [windDownTime, setWindDownTime] = useState<AlarmTime>({
+    hour: 22,
+    minute: 0,
+    isAM: true,
+  });
 
-  function calculateBedtime(): void {
-    const wakeTimeHour = wakeTime.hour !== null ? parseInt(wakeTime.hour, 10) : null;
-    const wakeTimeMinute = wakeTime.minute !== null ? parseInt(wakeTime.minute, 10) : null;
+  const handleAlarmChange = (e: React.ChangeEvent<HTMLInputElement>, field: string) => {
+    const value = parseInt(e.target.value, 10);
+    setAlarmTime({
+      ...alarmTime,
+      [field]: isNaN(value) ? 0 : value,
+    });
+  };
 
-    if (wakeTimeHour !== null && wakeTimeMinute !== null) {
-      let bedTimeHour = wakeTimeHour - 8;
-      let bedTimeMeridiem = wakeTime.meridiem;
+  const calculateTimes = () => {
+    const { hour, minute, isAM } = alarmTime;
 
-      if (bedTimeHour < 0) {
-        bedTimeHour += 12;
-        bedTimeMeridiem = wakeTime.meridiem === 'AM' ? 'PM' : 'AM';
-      }
-
-      if (bedTimeHour === 0) {
-        bedTimeHour = 12;
-      }
-
-      setBedtime({
-        hour: `${bedTimeHour}`,
-        minute: wakeTimeMinute < 10 ? `0${wakeTimeMinute}` : `${wakeTimeMinute}`,
-        meridiem: bedTimeMeridiem,
-      });
+    // Calculate Bedtime (8 hours before alarm)
+    let bedHour = hour - 8;
+    let bedIsAM = isAM;
+    if (bedHour < 1) {
+      bedHour = 12 + bedHour;
+      bedIsAM = !bedIsAM;
     }
-  }
+    setBedTime({
+      hour: bedHour,
+      minute,
+      isAM: bedIsAM,
+    });
 
-  const handleHourChange = (e: ChangeEvent<HTMLSelectElement>) => {
-    const hour = e.target.value !== '' ? e.target.value : null;
-    setWakeTime({ ...wakeTime, hour });
-  };
-
-  const handleMinuteChange = (e: ChangeEvent<HTMLSelectElement>) => {
-    const minute = e.target.value !== '' ? e.target.value : null;
-    setWakeTime({ ...wakeTime, minute });
-  };
-
-  const handleMeridiemChange = (e: ChangeEvent<HTMLSelectElement>) => {
-    const meridiem = e.target.value;
-    setWakeTime({ ...wakeTime, meridiem });
-  };
-
-  const renderOptions = (start: number, end: number, unit: 'hour' | 'minute') => {
-    const options = [];
-    for (let i = start; i <= end; i++) {
-      options.push(<option key={i} value={`${i < 10 && unit === 'minute' ? `0${i}` : `${i}`}`}>{`${i < 10 && unit === 'minute' ? `0${i}` : `${i}`}`}</option>);
+    // Calculate Winddown Time (9 hours before alarm)
+    let windDownHour = hour - 9;
+    let windDownIsAM = isAM;
+    if (windDownHour < 1) {
+      windDownHour = 12 + windDownHour;
+      windDownIsAM = !windDownIsAM;
     }
-    return options;
+    setWindDownTime({
+      hour: windDownHour,
+      minute,
+      isAM: windDownIsAM,
+    });
   };
 
   return (
-    <>
-      <h2>Enter your wake time</h2>
-      <select value={wakeTime.hour || ''} onChange={handleHourChange}>
-        <option value="">Hour</option>
-        {renderOptions(1, 12, 'hour')}
-      </select>
-      <select value={wakeTime.minute || ''} onChange={handleMinuteChange}>
-        <option value="">Minute</option>
-        {renderOptions(0, 59, 'minute')}
-      </select>
-      <select value={wakeTime.meridiem} onChange={handleMeridiemChange}>
-        <option value="AM">AM</option>
-        <option value="PM">PM</option>
-      </select>
-      <br />
-      <button onClick={calculateBedtime} disabled={!wakeTime.hour || !wakeTime.minute}>
-        Calculate bedtime
-      </button>
-      {bedtime && `Your bedtime is ${bedtime.hour}:${bedtime.minute} ${bedtime.meridiem}`}
-    </>
+    <div>
+      <h2>Alarm Calculator</h2>
+      <div>
+        <label>
+          Alarm Time:
+          <input type="number" value={alarmTime.hour} onChange={(e) => handleAlarmChange(e, 'hour')} />
+          :
+          <input type="number" value={alarmTime.minute} onChange={(e) => handleAlarmChange(e, 'minute')} />
+          <select value={alarmTime.isAM ? 'AM' : 'PM'} onChange={(e) => setAlarmTime({ ...alarmTime, isAM: e.target.value === 'AM' })}>
+            <option value="AM">AM</option>
+            <option value="PM">PM</option>
+          </select>
+        </label>
+        <button onClick={calculateTimes}>Calculate</button>
+      </div>
+      <div>
+        <h3>Bedtime: {`${bedTime.hour}:${bedTime.minute.toString().padStart(2, '0')} ${bedTime.isAM ? 'AM' : 'PM'}`}</h3>
+        <h3>Wind Down Time: {`${windDownTime.hour}:${windDownTime.minute.toString().padStart(2, '0')} ${windDownTime.isAM ? 'AM' : 'PM'}`}</h3>
+      </div>
+    </div>
   );
-}
+};
 
-export default App;
+export default AlarmCalculator;
