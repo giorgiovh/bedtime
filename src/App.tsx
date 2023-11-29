@@ -4,7 +4,7 @@ import './App.css';
 type Time = {
   hour: string | null;
   minute: string | null;
-  meridiem: string | null;
+  meridiem: string;
 };
 
 function App() {
@@ -12,11 +12,11 @@ function App() {
   const [bedtime, setBedtime] = useState<Time | undefined>();
 
   function calculateBedtime(): void {
-    const hour = wakeTime.hour !== null ? parseInt(wakeTime.hour, 10) : null;
-    const minute = wakeTime.minute !== null ? parseInt(wakeTime.minute, 10) : null;
+    const wakeTimeHour = wakeTime.hour !== null ? parseInt(wakeTime.hour, 10) : null;
+    const wakeTimeMinute = wakeTime.minute !== null ? parseInt(wakeTime.minute, 10) : null;
 
-    if (hour !== null && minute !== null && wakeTime.meridiem !== null) {
-      let bedTimeHour = hour - 8;
+    if (wakeTimeHour !== null && wakeTimeMinute !== null) {
+      let bedTimeHour = wakeTimeHour - 8;
       let bedTimeMeridiem = wakeTime.meridiem;
 
       if (bedTimeHour < 0) {
@@ -29,8 +29,8 @@ function App() {
       }
 
       setBedtime({
-        hour: bedTimeHour < 10 ? `0${bedTimeHour}` : `${bedTimeHour}`,
-        minute: minute < 10 ? `0${minute}` : `${minute}`,
+        hour: `${bedTimeHour}`,
+        minute: wakeTimeMinute < 10 ? `0${wakeTimeMinute}` : `${wakeTimeMinute}`,
         meridiem: bedTimeMeridiem,
       });
     }
@@ -47,14 +47,14 @@ function App() {
   };
 
   const handleMeridiemChange = (e: ChangeEvent<HTMLSelectElement>) => {
-    const meridiem = e.target.value !== '' ? e.target.value : null;
+    const meridiem = e.target.value;
     setWakeTime({ ...wakeTime, meridiem });
   };
 
-  const renderOptions = (start: number, end: number) => {
+  const renderOptions = (start: number, end: number, unit: 'hour' | 'minute') => {
     const options = [];
     for (let i = start; i <= end; i++) {
-      options.push(<option key={i} value={`${i < 10 ? `0${i}` : `${i}`}`}>{`${i < 10 ? `0${i}` : `${i}`}`}</option>);
+      options.push(<option key={i} value={`${i < 10 && unit === 'minute' ? `0${i}` : `${i}`}`}>{`${i < 10 && unit === 'minute' ? `0${i}` : `${i}`}`}</option>);
     }
     return options;
   };
@@ -64,18 +64,18 @@ function App() {
       <h2>Enter your wake time</h2>
       <select value={wakeTime.hour || ''} onChange={handleHourChange}>
         <option value="">Hour</option>
-        {renderOptions(1, 12)}
+        {renderOptions(1, 12, 'hour')}
       </select>
       <select value={wakeTime.minute || ''} onChange={handleMinuteChange}>
         <option value="">Minute</option>
-        {renderOptions(0, 59)}
+        {renderOptions(0, 59, 'minute')}
       </select>
-      <select value={wakeTime.meridiem || 'AM'} onChange={handleMeridiemChange}>
+      <select value={wakeTime.meridiem} onChange={handleMeridiemChange}>
         <option value="AM">AM</option>
         <option value="PM">PM</option>
       </select>
       <br />
-      <button onClick={calculateBedtime} disabled={!wakeTime.hour || !wakeTime.minute || !wakeTime.meridiem}>
+      <button onClick={calculateBedtime} disabled={!wakeTime.hour || !wakeTime.minute}>
         Calculate bedtime
       </button>
       {bedtime && `Your bedtime is ${bedtime.hour}:${bedtime.minute} ${bedtime.meridiem}`}
