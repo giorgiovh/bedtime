@@ -1,23 +1,23 @@
 import React, { useState } from 'react';
 
-type AlarmTime = {
+type Time = {
   hour: number;
   minute: number;
   isAM: boolean; // true for AM, false for PM
 };
 
 const AlarmCalculator: React.FC = () => {
-  const [alarmTime, setAlarmTime] = useState<AlarmTime>({
+  const [alarmTime, setAlarmTime] = useState<Time>({
     hour: 7,
     minute: 0,
     isAM: true,
   });
-  const [bedTime, setBedTime] = useState<AlarmTime>({
+  const [bedTime, setBedTime] = useState<Time>({
     hour: 23,
     minute: 0,
     isAM: true,
   });
-  const [windDownTime, setWindDownTime] = useState<AlarmTime>({
+  const [windDownTime, setWindDownTime] = useState<Time>({
     hour: 22,
     minute: 0,
     isAM: true,
@@ -75,6 +75,7 @@ const AlarmCalculator: React.FC = () => {
             <option value="PM">PM</option>
           </select>
         </label>
+        <br /><br />
         <button onClick={calculateTimes}>Calculate</button>
       </div>
       <div>
