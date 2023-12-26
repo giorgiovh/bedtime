@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 
 type Time = {
-  hour: number;
-  minute: number;
+  hour: number | undefined | null;
+  minute: number | undefined | null;
   isAM: boolean; // true for AM, false for PM
 };
 
@@ -27,8 +27,10 @@ const AlarmCalculator: React.FC = () => {
     const value = parseInt(e.target.value, 10);
     setAlarmTime({
       ...alarmTime,
-      [field]: isNaN(value) ? 0 : value,
+      [field]: value,
     });
+    console.log('alarm time', alarmTime);
+    
   };
 
   const calculateTimes = () => {
@@ -76,7 +78,7 @@ const AlarmCalculator: React.FC = () => {
           </select>
         </label>
         <br /><br />
-        <button onClick={calculateTimes}>Calculate</button>
+        <button onClick={calculateTimes} disabled={Number.isNaN(alarmTime.hour) ||  Number.isNaN(alarmTime.minute)}>Calculate</button>
       </div>
       <div>
         <h3>Bedtime: {`${bedTime.hour}:${bedTime.minute.toString().padStart(2, '0')} ${bedTime.isAM ? 'AM' : 'PM'}`}</h3>
